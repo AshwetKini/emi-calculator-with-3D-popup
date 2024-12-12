@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMI Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .product-section {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .product-cards {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            width: 300px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            color: #333;
+        }
+
+        .card p {
+            color: #555;
+        }
+
+        .card a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        /* 3D Button Styles */
+        .emi-btn {
+            margin-top: 20px;
+            display: inline-block;
+            padding: 15px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(145deg, #4CAF50, #45A049);
+            border: none;
+            border-radius: 25px;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2), -5px -5px 10px rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .emi-btn:hover {
+            background: linear-gradient(145deg, #45A049, #4CAF50);
+            transform: translateY(-3px);
+        }
+
+        /* Popup Styles */
+        .emi-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .emi-popup.open {
+            display: block;
+        }
+
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .popup-header h3 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .close-popup {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #555;
+        }
+
+        .emi-form label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .emi-form input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .calculate-btn:hover {
+            background-color: #45A049;
+        }
+
+        .emi-results {
+            margin-top: 20px;
+        }
+
+        .emi-results p {
+            margin: 10px 0;
+            color: #333;
+        }
+
+        /* Overlay */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .overlay.open {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <section class="product-section">
+        <h2>Our Products</h2>
+        <div class="product-cards">
+            <div class="card">
+                <h3>Kotak 811</h3>
+                <p>Partner with us to offer Kotak 811 digital banking solutions and earn attractive commissions.</p>
+                <a href="#">Learn More →</a>
+            </div>
+            <div class="card">
+                <h3>Loan Services</h3>
+                <p>Earn 1.25% commission on every successful loan disbursement. Join our network of loan partners.</p>
+                <a href="#">Learn More →</a>
+            </div>
+        </div>
+
+        <button class="emi-btn" id="open-emi-popup">EMI Calculator</button>
+    </section>
+
+    <!-- EMI Popup -->
+    <div class="overlay" id="overlay"></div>
+    <div class="emi-popup" id="emi-popup">
+        <div class="popup-header">
+            <h3>EMI Calculator</h3>
+            <button class="close-popup" id="close-emi-popup">&times;</button>
+        </div>
+        <form class="emi-form" id="emi-form">
+            <label for="loan-amount">Loan Amount (₹):</label>
+            <input type="number" id="loan-amount" placeholder="Enter loan amount">
+
+            <label for="interest-rate">Interest Rate (%):</label>
+            <input type="number" id="interest-rate" placeholder="Enter interest rate">
+
+            <label for="loan-tenure">Tenure (Years):</label>
+            <input type="number" id="loan-tenure" placeholder="Enter tenure in years">
+
+            <button type="button" class="calculate-btn" id="calculate-emi">Calculate</button>
+        </form>
+        <div class="emi-results" id="emi-results">
+            <p>Monthly EMI: ₹<span id="emi"></span></p>
+            <p>Total Interest: ₹<span id="total-interest"></span></p>
+            <p>Total Payment: ₹<span id="total-payment"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // Open and Close Popup
+        const openPopup = document.getElementById('open-emi-popup');
+        const closePopup = document.getElementById('close-emi-popup');
+        const overlay = document.getElementById('overlay');
+        const emiPopup = document.getElementById('emi-popup');
+
+        openPopup.addEventListener('click', () => {
+            overlay.classList.add('open');
+            emiPopup.classList.add('open');
+        });
+
+        closePopup.addEventListener('click', () => {
+            overlay.classList.remove('open');
+            emiPopup.classList.remove('open');
+        });
+
+        // EMI Calculation Logic
+        document.getElementById('calculate-emi').addEventListener('click', () => {
+            const loanAmount = parseFloat(document.getElementById('loan-amount').value);
+            const interestRate = parseFloat(document.getElementById('interest-rate').value);
+            const tenure = parseFloat(document.getElementById('loan-tenure').value) * 12;
+
+            if (isNaN(loanAmount) || isNaN(interestRate) || isNaN(tenure)) {
+                alert('Please enter valid inputs');
+                return;
+            }
+
+            const monthlyInterestRate = interestRate / 12 / 100;
+            const emi = (loanAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, tenure)) /
+                        (Math.pow(1 + monthlyInterestRate, tenure) - 1);
+
+            const totalPayment = emi * tenure;
+            const totalInterest = totalPayment - loanAmount;
+
+            document.getElementById('emi').textContent = emi.toFixed(2);
+            document.getElementById('total-interest').textContent = totalInterest.toFixed(2);
+            document.getElementById('total-payment').textContent = totalPayment.toFixed(2);
+
+            document.getElementById('emi-results').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
